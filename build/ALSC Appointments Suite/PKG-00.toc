@@ -1,0 +1,60 @@
+('C:\\Users\\Asian Land\\PycharmProjects\\3 - APPOINTMENTS\\build\\ALSC '
+ 'Appointments Suite\\ALSC Appointments Suite.pkg',
+ {'BINARY': True,
+  'DATA': True,
+  'EXECUTABLE': True,
+  'EXTENSION': True,
+  'PYMODULE': True,
+  'PYSOURCE': True,
+  'PYZ': False,
+  'SPLASH': True,
+  'SYMLINK': False},
+ [('pyi-contents-directory _internal', '', 'OPTION'),
+  ('PYZ-00.pyz',
+   'C:\\Users\\Asian Land\\PycharmProjects\\3 - APPOINTMENTS\\build\\ALSC '
+   'Appointments Suite\\PYZ-00.pyz',
+   'PYZ'),
+  ('struct',
+   'C:\\Users\\Asian Land\\PycharmProjects\\3 - APPOINTMENTS\\build\\ALSC '
+   'Appointments Suite\\localpycs\\struct.pyc',
+   'PYMODULE'),
+  ('pyimod01_archive',
+   'C:\\Users\\Asian Land\\PycharmProjects\\3 - APPOINTMENTS\\build\\ALSC '
+   'Appointments Suite\\localpycs\\pyimod01_archive.pyc',
+   'PYMODULE'),
+  ('pyimod02_importers',
+   'C:\\Users\\Asian Land\\PycharmProjects\\3 - APPOINTMENTS\\build\\ALSC '
+   'Appointments Suite\\localpycs\\pyimod02_importers.pyc',
+   'PYMODULE'),
+  ('pyimod03_ctypes',
+   'C:\\Users\\Asian Land\\PycharmProjects\\3 - APPOINTMENTS\\build\\ALSC '
+   'Appointments Suite\\localpycs\\pyimod03_ctypes.pyc',
+   'PYMODULE'),
+  ('pyimod04_pywin32',
+   'C:\\Users\\Asian Land\\PycharmProjects\\3 - APPOINTMENTS\\build\\ALSC '
+   'Appointments Suite\\localpycs\\pyimod04_pywin32.pyc',
+   'PYMODULE'),
+  ('pyiboot01_bootstrap',
+   'C:\\Users\\Asian Land\\PycharmProjects\\3 - '
+   'APPOINTMENTS\\.venv\\Lib\\site-packages\\PyInstaller\\loader\\pyiboot01_bootstrap.py',
+   'PYSOURCE'),
+  ('pyi_rth_inspect',
+   'C:\\Users\\Asian Land\\PycharmProjects\\3 - '
+   'APPOINTMENTS\\.venv\\Lib\\site-packages\\PyInstaller\\hooks\\rthooks\\pyi_rth_inspect.py',
+   'PYSOURCE'),
+  ('pyi_rth__tkinter',
+   'C:\\Users\\Asian Land\\PycharmProjects\\3 - '
+   'APPOINTMENTS\\.venv\\Lib\\site-packages\\PyInstaller\\hooks\\rthooks\\pyi_rth__tkinter.py',
+   'PYSOURCE'),
+  ('main_v2',
+   'C:\\Users\\Asian Land\\PycharmProjects\\3 - '
+   'APPOINTMENTS\\Payments\\main_v2.py',
+   'PYSOURCE')],
+ 'python311.dll',
+ True,
+ False,
+ False,
+ [],
+ None,
+ None,
+ None)
