@@ -5,7 +5,9 @@ import csv
 from datetime import datetime, date
 import os
 import shutil
-import sys, os
+import sys
+
+from font_utils import install_fonts
 
 def resource_path(*parts) -> str:
     """Returns absolute path to a bundled resource (PyInstaller-compatible)."""
@@ -23,6 +25,11 @@ script_dir = app_dir()
 
 ASSETS_HEADER = resource_path("Header.jpg")
 FONTS_DIR = resource_path("Fonts")
+if not os.path.exists(FONTS_DIR):
+    FONTS_DIR = resource_path(os.path.join("..", "Fonts"))
+
+# Ensure bundled fonts are available to the system so FPDF can load them
+install_fonts(FONTS_DIR)
 
 
 # -------------------- Globals --------------------
