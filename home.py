@@ -199,12 +199,15 @@ def main():
     # initial load
     refresh_csv_list()
 
-    # Optional: warn early if components are missing (in frozen build)
+
+    # Optional: warn early if some components are missing (in frozen build)
     if getattr(sys, "frozen", False):
         existing = {p.name.lower() for p in base_dir().iterdir() if p.is_file()}
         expected = ("Appointments.exe", "Payments.exe", "Pending.exe", "PDFViewer.exe")
-        missing = [n for n in expected if n.lower() not in existing]
-        if missing:
+        present = [n for n in expected if n.lower() in existing]
+        if present and len(present) < len(expected):
+            missing = [n for n in expected if n.lower() not in existing]
+
             from tkinter import messagebox
             messagebox.showwarning(
                 "Missing components",
