@@ -9,7 +9,7 @@ import sys
 from pathlib import Path
 
 sys.path.append(str(Path(__file__).resolve().parents[1]))
-from common_paths import data_dir, find_latest_csv
+from common_paths import base_dir, data_dir, find_latest_csv
 
 # Example A: open the latest "appointments_" CSV automatically
 csv_path = find_latest_csv(prefix="appointments_")
@@ -22,7 +22,7 @@ if not csv_path:
 
 class PDF(FPDF):
     def header(self):
-        self.image('Header.jpg', 27.5, 0, 150, 35)
+        self.image(str(base_dir() / 'Header.jpg'), 27.5, 0, 150, 35)
         self.ln(20)
         self.set_font('Novecento Wide Demi Bold', 'B', 9)
         self.cell(0, 0, 'LIST OF APPOINTMENTS FOR ' + str(var_date), 'L')
@@ -54,7 +54,7 @@ def generate_payment_pdf():
 
         pdf = PDF(orientation='P', unit='mm', format='A4')
 
-        root_dir = Path(__file__).resolve().parents[1]
+        root_dir = base_dir()
         font_dir = root_dir / "Fonts"
         pdf.add_font(
             'Novecento Wide Demi Bold',

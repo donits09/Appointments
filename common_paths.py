@@ -12,7 +12,11 @@ APP_NAME = "ScriptLauncher"
 def base_dir() -> Path:
     """Return directory containing this application or executable."""
     if getattr(sys, "frozen", False):
-        return Path(sys.executable).parent
+        # When bundled with PyInstaller ``sys._MEIPASS`` points to the
+        # temporary extraction directory that holds bundled data files.  Use
+        # it when available so relative resources like fonts are found both in
+        # one-file and one-folder distributions.
+        return Path(getattr(sys, "_MEIPASS", Path(sys.executable).parent))
     return Path(__file__).resolve().parent
 
 
