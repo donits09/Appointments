@@ -17,19 +17,30 @@ def data_dir() -> Path:
     d.mkdir(parents=True, exist_ok=True)
     return d
 
+def _find_case_insensitive(name: str) -> Path | None:
+    """Return a sibling file matching ``name`` regardless of casing."""
+    target = name.lower()
+    for p in base_dir().iterdir():
+        if p.name.lower() == target:
+            return p
+    return None
+
+
 def app_or_py(exe_name: str, fallback_rel_py: str) -> list[str]:
     """
     Prefer the sibling EXE. If missing:
       - in dev (not frozen): run the .py with the real Python
       - in frozen build: raise FileNotFoundError (caller shows a message)
     """
-    exe_path = base_dir() / exe_name
-    if exe_path.exists():
+    exe_path = _find_case_insensitive(exe_name)
+    if exe_path and exe_path.exists():
         return [str(exe_path)]
 
     if getattr(sys, "frozen", False):
         # Don't recurse by using sys.executable (that's the launcher itself)
-        raise FileNotFoundError(f"Component '{exe_name}' was not found beside the launcher: {exe_path}")
+        raise FileNotFoundError(
+            f"Component '{exe_name}' was not found beside the launcher: {base_dir() / exe_name}"
+        )
 
     # Dev mode: run the Python script with the current interpreter
     return [sys.executable, str(base_dir() / fallback_rel_py)]
@@ -154,33 +165,33 @@ def main():
             cmd = app_or_py(exe_name, fallback_rel_py)
             subprocess.Popen(cmd, shell=False)
         except FileNotFoundError as miss:
-            messagebox.showerror(
-                "Component missing",
-                f"{miss}\n\n"
-                "Copy all component EXEs beside ScriptLauncher.exe, or reinstall:\n"
-                f" - {exe_name}"
+            message = (
+                f'{miss}\n\n'
+                'Copy all component EXEs beside ScriptLauncher.exe, or reinstall:\n'
+                f' - {exe_name}'
             )
+            messagebox.showerror('Component missing', message)
         except Exception as e:
-            messagebox.showerror("Error", f"Failed to run {title}:\n{e}")
+            messagebox.showerror('Error', f'Failed to run {title}:\n{e}')
 
-    def run_tkinter_script():
+    def run_appointments():
         run_component("Appointments.exe", "Appointments/main_v2.py", "Appointments")
 
-    def run_tkinter2_script():
+    def run_payments():
         run_component("Payments.exe", "Payments/main_v2.py", "Payments")
 
-    def run_tkinter3_script():
+    def run_pending():
         run_component("Pending.exe", "Pending/main_v2.py", "Pending")
 
-    def run_tkinter4_script():
+    def run_pdf_viewer():
         run_component("PDFViewer.exe", "pdf.py", "PDF Viewer")
 
     # ---- buttons ----
     ttk.Button(button_frame, text="Upload CSV", command=upload_csv_file, width=button_width).pack(pady=5, ipady=5)
-    ttk.Button(button_frame, text="Appointments", command=run_tkinter_script, width=button_width).pack(pady=5, ipady=5)
-    ttk.Button(button_frame, text="Payments", command=run_tkinter2_script, width=button_width).pack(pady=5, ipady=5)
-    ttk.Button(button_frame, text="Pending", command=run_tkinter3_script, width=button_width).pack(pady=5, ipady=5)
-    ttk.Button(button_frame, text="View PDF", command=run_tkinter4_script, width=button_width).pack(pady=5, ipady=5)
+    ttk.Button(button_frame, text="Appointments", command=run_appointments, width=button_width).pack(pady=5, ipady=5)
+    ttk.Button(button_frame, text="Payments", command=run_payments, width=button_width).pack(pady=5, ipady=5)
+    ttk.Button(button_frame, text="Pending", command=run_pending, width=button_width).pack(pady=5, ipady=5)
+    ttk.Button(button_frame, text="View PDF", command=run_pdf_viewer, width=button_width).pack(pady=5, ipady=5)
     ttk.Button(button_frame, text="Exit", command=root.quit, width=button_width).pack(pady=(10, 5), ipady=5)
 
     ttk.Button(treeview_frame, text="Delete File", command=delete_csv_files, width=button_width).pack(side="bottom", pady=10)
@@ -188,12 +199,13 @@ def main():
     # initial load
     refresh_csv_list()
 
-    # Optional: warn early if components are missing (in frozen build)
+    # Optional: warn early if some components are missing (in frozen build)
     if getattr(sys, "frozen", False):
-        missing = [n for n in ("Appointments.exe","Payments.exe","Pending.exe","PDFViewer.exe")
-                   if not (base_dir() / n).exists()]
-        if missing:
-            from tkinter import messagebox
+        existing = {p.name.lower() for p in base_dir().iterdir() if p.is_file()}
+        expected = ("Appointments.exe", "Payments.exe", "Pending.exe", "PDFViewer.exe")
+        present = [n for n in expected if n.lower() in existing]
+        if present and len(present) < len(expected):
+            missing = [n for n in expected if n.lower() not in existing]
             messagebox.showwarning(
                 "Missing components",
                 "These EXEs are not beside ScriptLauncher.exe:\n- " + "\n- ".join(missing)
