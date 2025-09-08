@@ -5,6 +5,10 @@ import csv
 from datetime import datetime
 import os
 from tkcalendar import Calendar
+import sys
+from pathlib import Path
+
+sys.path.append(str(Path(__file__).resolve().parents[1]))
 from common_paths import data_dir, find_latest_csv
 
 # Example A: open the latest "appointments_" CSV automatically
