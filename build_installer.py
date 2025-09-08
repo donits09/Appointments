@@ -1,9 +1,10 @@
+
 """Build standalone executables for the suite using PyInstaller."""
+
 from __future__ import annotations
 
 import os
 import PyInstaller.__main__
-
 
 SEP = ';' if os.name == 'nt' else ':'
 DATAS = [
