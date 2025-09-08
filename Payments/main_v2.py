@@ -46,16 +46,28 @@ def generate_payment_pdf():
         var_date = datetime.strptime(selected_date, "%m/%d/%y").strftime("%Y-%m-%d")
         c_var_date = datetime.strptime(selected_date, "%m/%d/%y").strftime("%Y%m%d")
 
-        csv_filename = f'payments_{var_date}.csv'
-        if not os.path.exists(csv_filename):
+        csv_filename = f"payments_{var_date}.csv"
+        csv_path = data_dir() / csv_filename
+        if not csv_path.exists():
             messagebox.showerror("File Not Found", f"CSV file not found for date: {var_date}")
             return
 
         pdf = PDF(orientation='P', unit='mm', format='A4')
 
-        pdf.add_font('Novecento Wide Demi Bold', 'B',
-                     r"C:\Users\user\AppData\Local\Microsoft\Windows\Fonts\Novecentowide-Bold.ttf", uni=True)
-        pdf.add_font('Armata Regular', '', r"C:\Users\user\AppData\Local\Microsoft\Windows\Fonts\Armata-Regular.ttf", uni=True)
+        root_dir = Path(__file__).resolve().parents[1]
+        font_dir = root_dir / "Fonts"
+        pdf.add_font(
+            'Novecento Wide Demi Bold',
+            'B',
+            str(font_dir / 'Novecentowide-Bold.ttf'),
+            uni=True,
+        )
+        pdf.add_font(
+            'Armata Regular',
+            '',
+            str(font_dir / 'Armata-Regular.ttf'),
+            uni=True,
+        )
         pdf.add_font('Trebuchet MS Bold', 'B', r"C:\Windows\Fonts\trebucbd.ttf", uni=True)
         pdf.add_font('Trebuchet MS Bold Italic', 'BI', r"C:\Windows\Fonts\trebucbi.ttf", uni=True)
         pdf.add_font('Trebuchet MS Regular', '', r"C:\Windows\Fonts\trebuc.ttf", uni=True)
@@ -68,7 +80,7 @@ def generate_payment_pdf():
 
         pdf.set_font('Trebuchet MS Regular', '', 7)
 
-        with open(csv_filename, newline='', encoding='utf8') as f:
+        with open(csv_path, newline='', encoding='utf8') as f:
             reader = csv.reader(f)
             next(reader)
             sortedlist = filter(None, reader)
