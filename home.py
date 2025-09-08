@@ -17,19 +17,30 @@ def data_dir() -> Path:
     d.mkdir(parents=True, exist_ok=True)
     return d
 
+def _find_case_insensitive(name: str) -> Path | None:
+    """Return a sibling file matching ``name`` regardless of casing."""
+    target = name.lower()
+    for p in base_dir().iterdir():
+        if p.name.lower() == target:
+            return p
+    return None
+
+
 def app_or_py(exe_name: str, fallback_rel_py: str) -> list[str]:
     """
     Prefer the sibling EXE. If missing:
       - in dev (not frozen): run the .py with the real Python
       - in frozen build: raise FileNotFoundError (caller shows a message)
     """
-    exe_path = base_dir() / exe_name
-    if exe_path.exists():
+    exe_path = _find_case_insensitive(exe_name)
+    if exe_path and exe_path.exists():
         return [str(exe_path)]
 
     if getattr(sys, "frozen", False):
         # Don't recurse by using sys.executable (that's the launcher itself)
-        raise FileNotFoundError(f"Component '{exe_name}' was not found beside the launcher: {exe_path}")
+        raise FileNotFoundError(
+            f"Component '{exe_name}' was not found beside the launcher: {base_dir() / exe_name}"
+        )
 
     # Dev mode: run the Python script with the current interpreter
     return [sys.executable, str(base_dir() / fallback_rel_py)]
@@ -188,11 +199,13 @@ def main():
     # initial load
     refresh_csv_list()
 
-    # Optional: warn early if components are missing (in frozen build)
+    # Optional: warn early if some components are missing (in frozen build)
     if getattr(sys, "frozen", False):
-        missing = [n for n in ("Appointments.exe","Payments.exe","Pending.exe","PDFViewer.exe")
-                   if not (base_dir() / n).exists()]
-        if missing:
+        existing = {p.name.lower() for p in base_dir().iterdir() if p.is_file()}
+        expected = ("Appointments.exe", "Payments.exe", "Pending.exe", "PDFViewer.exe")
+        present = [n for n in expected if n.lower() in existing]
+        if present and len(present) < len(expected):
+            missing = [n for n in expected if n.lower() not in existing]
             from tkinter import messagebox
             messagebox.showwarning(
                 "Missing components",
