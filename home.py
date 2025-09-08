@@ -1,3 +1,4 @@
+
 # home.py
 import sys, os, shutil, subprocess
 from pathlib import Path
@@ -165,40 +166,39 @@ def main():
             cmd = app_or_py(exe_name, fallback_rel_py)
             subprocess.Popen(cmd, shell=False)
         except FileNotFoundError as miss:
-            messagebox.showerror(
-                "Component missing",
-                f"{miss}\n\n"
-                "Copy all component EXEs beside ScriptLauncher.exe, or reinstall:\n"
-                f" - {exe_name}"
+            message = (
+                f'{miss}\n\n'
+                'Copy all component EXEs beside ScriptLauncher.exe, or reinstall:\n'
+                f' - {exe_name}'
             )
+            messagebox.showerror('Component missing', message)
         except Exception as e:
-            messagebox.showerror("Error", f"Failed to run {title}:\n{e}")
+            messagebox.showerror('Error', f'Failed to run {title}:\n{e}')
 
-    def run_tkinter_script():
+    def run_appointments():
         run_component("Appointments.exe", "Appointments/main_v2.py", "Appointments")
 
-    def run_tkinter2_script():
+    def run_payments():
         run_component("Payments.exe", "Payments/main_v2.py", "Payments")
 
-    def run_tkinter3_script():
+    def run_pending():
         run_component("Pending.exe", "Pending/main_v2.py", "Pending")
 
-    def run_tkinter4_script():
+    def run_pdf_viewer():
         run_component("PDFViewer.exe", "pdf.py", "PDF Viewer")
 
     # ---- buttons ----
     ttk.Button(button_frame, text="Upload CSV", command=upload_csv_file, width=button_width).pack(pady=5, ipady=5)
-    ttk.Button(button_frame, text="Appointments", command=run_tkinter_script, width=button_width).pack(pady=5, ipady=5)
-    ttk.Button(button_frame, text="Payments", command=run_tkinter2_script, width=button_width).pack(pady=5, ipady=5)
-    ttk.Button(button_frame, text="Pending", command=run_tkinter3_script, width=button_width).pack(pady=5, ipady=5)
-    ttk.Button(button_frame, text="View PDF", command=run_tkinter4_script, width=button_width).pack(pady=5, ipady=5)
+    ttk.Button(button_frame, text="Appointments", command=run_appointments, width=button_width).pack(pady=5, ipady=5)
+    ttk.Button(button_frame, text="Payments", command=run_payments, width=button_width).pack(pady=5, ipady=5)
+    ttk.Button(button_frame, text="Pending", command=run_pending, width=button_width).pack(pady=5, ipady=5)
+    ttk.Button(button_frame, text="View PDF", command=run_pdf_viewer, width=button_width).pack(pady=5, ipady=5)
     ttk.Button(button_frame, text="Exit", command=root.quit, width=button_width).pack(pady=(10, 5), ipady=5)
 
     ttk.Button(treeview_frame, text="Delete File", command=delete_csv_files, width=button_width).pack(side="bottom", pady=10)
 
     # initial load
     refresh_csv_list()
-
 
     # Optional: warn early if some components are missing (in frozen build)
     if getattr(sys, "frozen", False):
@@ -207,8 +207,6 @@ def main():
         present = [n for n in expected if n.lower() in existing]
         if present and len(present) < len(expected):
             missing = [n for n in expected if n.lower() not in existing]
-
-            from tkinter import messagebox
             messagebox.showwarning(
                 "Missing components",
                 "These EXEs are not beside ScriptLauncher.exe:\n- " + "\n- ".join(missing)
@@ -220,3 +218,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
