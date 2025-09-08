@@ -43,11 +43,14 @@ def main():
     root = tk.Tk()
     root.withdraw()
 
+    # Ensure relative resources resolve beside the executable
+    os.chdir(base_dir())
+
     # Load private fonts before creating tkfont.Font objects
     load_private_fonts([
-        "Fonts/Armata-Regular.ttf",
-        "Fonts/Novecentowide-Bold.ttf",
-        "Fonts/Novecentowide-DemiBold_0.ttf",
+        base_dir() / "Fonts" / "Armata-Regular.ttf",
+        base_dir() / "Fonts" / "Novecentowide-Bold.ttf",
+        base_dir() / "Fonts" / "Novecentowide-DemiBold_0.ttf",
     ])
 
     def choose_family(preferred_names, fallbacks=("Segoe UI", "Arial", "Tahoma")):
@@ -69,15 +72,23 @@ def main():
 
     # ---------- UI ----------
     root.title("Script Launcher")
-    root.geometry("550x420")
+    width, height = 550, 420
+    root.geometry(f"{width}x{height}")
+    root.update_idletasks()
+    x = (root.winfo_screenwidth() - width) // 2
+    y = (root.winfo_screenheight() - height) // 2
+    root.geometry(f"{width}x{height}+{x}+{y}")
     root.resizable(False, False)
-    root.configure(bg="#f0f0f0")
+    root.configure(bg="#e9ecef")
 
     style = ttk.Style(root)
     style.theme_use("clam")
-    style.configure("TFrame", background="#f0f0f0")
-    style.configure("TButton", background="#f0f0f0", padding=6)
-    style.configure("TLabel", background="#f0f0f0")
+    style.configure("TFrame", background="#e9ecef")
+    style.configure("TButton", background="#ffffff", padding=6, relief="flat")
+    style.map("TButton", background=[("active", "#d4d4d4")])
+    style.configure("TLabel", background="#e9ecef")
+    style.configure("Treeview", background="#ffffff", fieldbackground="#ffffff", bordercolor="#d9d9d9")
+    style.configure("Treeview.Heading", font=btn_font, background="#d9d9d9")
 
     button_frame = ttk.Frame(root, padding=20)
     button_frame.pack(side="left", fill="y", padx=10)
