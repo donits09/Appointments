@@ -1,132 +1,196 @@
-import subprocess
-import tkinter as tk
-from tkinter import ttk, messagebox, filedialog
-import tkinter.font as font
-import os
-import shutil
+# home.py
+import sys, os, shutil, subprocess
+from pathlib import Path
 
-def upload_csv_file():
-    file_paths = filedialog.askopenfilenames(
-        filetypes=[("CSV files", "*.csv")],
-        title="Select CSV file(s)"
-    )
-    if not file_paths:
-        return 
+from fonts_loader import load_private_fonts  # OK at top level (no Tk side-effects)
 
-    try:
-        script_dir = os.path.dirname(os.path.abspath(__file__))
-        for file_path in file_paths:
-            filename = os.path.basename(file_path)
-            destination_path = os.path.join(script_dir, filename)
-            shutil.copy(file_path, destination_path)
+APP_NAME = "ScriptLauncher"
 
-        messagebox.showinfo("Upload Complete", f"Successfully uploaded {len(file_paths)} file(s).")
-        refresh_csv_list()
-    except Exception as e:
-        messagebox.showerror("Error", str(e))
+def base_dir() -> Path:
+    if getattr(sys, "frozen", False):
+        return Path(sys.executable).parent
+    return Path(__file__).resolve().parent
 
-def refresh_csv_list():
-    """ Refresh the list of CSV files in the treeview. """
-    csv_files = [f for f in os.listdir(script_dir) if f.endswith('.csv')]
-    for row in treeview.get_children():
-        treeview.delete(row)
-    for file in csv_files:
-        treeview.insert("", "end", values=(file,))
+def data_dir() -> Path:
+    root_dir = Path(os.getenv("LOCALAPPDATA", base_dir()))
+    d = root_dir / APP_NAME / "data"
+    d.mkdir(parents=True, exist_ok=True)
+    return d
 
-def delete_csv_files():
-    """ Delete selected CSV files from the directory and treeview. """
-    selected_items = treeview.selection()
-    if not selected_items:
-        messagebox.showwarning("Selection Error", "Please select files to delete.")
-        return
+def app_or_py(exe_name: str, fallback_rel_py: str) -> list[str]:
+    """
+    Prefer the sibling EXE. If missing:
+      - in dev (not frozen): run the .py with the real Python
+      - in frozen build: raise FileNotFoundError (caller shows a message)
+    """
+    exe_path = base_dir() / exe_name
+    if exe_path.exists():
+        return [str(exe_path)]
 
-    confirm = messagebox.askyesno("Confirm Deletion", "Are you sure you want to delete the selected files?")
-    if not confirm:
-        return
+    if getattr(sys, "frozen", False):
+        # Don't recurse by using sys.executable (that's the launcher itself)
+        raise FileNotFoundError(f"Component '{exe_name}' was not found beside the launcher: {exe_path}")
 
-    for selected_item in selected_items:
-        file_name = treeview.item(selected_item, 'values')[0]
-        file_path = os.path.join(script_dir, file_name)
+    # Dev mode: run the Python script with the current interpreter
+    return [sys.executable, str(base_dir() / fallback_rel_py)]
 
+def main():
+    import tkinter as tk
+    from tkinter import ttk, messagebox, filedialog
+    import tkinter.font as tkfont
+
+    # ONE root only; hide during setup
+    root = tk.Tk()
+    root.withdraw()
+
+    # Load private fonts before creating tkfont.Font objects
+    load_private_fonts([
+        "Fonts/Armata-Regular.ttf",
+        "Fonts/Novecentowide-Bold.ttf",
+        "Fonts/Novecentowide-DemiBold_0.ttf",
+    ])
+
+    def choose_family(preferred_names, fallbacks=("Segoe UI", "Arial", "Tahoma")):
+        fams = list(tkfont.families())
+        lower = {f.lower(): f for f in fams}
+        for name in list(preferred_names) + list(fallbacks):
+            if name in lower:
+                return lower[name]
+            for f in fams:
+                if name.lower() in f.lower():
+                    return f
+        return tkfont.nametofont("TkDefaultFont").actual("family")
+
+    armata_family    = choose_family(["Armata"])
+    novecento_family = choose_family(["Novecento Wide", "Novecentowide"])
+
+    title_font = tkfont.Font(root=root, family=armata_family,    size=14, weight="bold")
+    btn_font   = tkfont.Font(root=root, family=novecento_family, size=10)
+
+    # ---------- UI ----------
+    root.title("Script Launcher")
+    root.geometry("550x420")
+    root.resizable(False, False)
+    root.configure(bg="#f0f0f0")
+
+    style = ttk.Style(root)
+    style.theme_use("clam")
+    style.configure("TFrame", background="#f0f0f0")
+    style.configure("TButton", background="#f0f0f0", padding=6)
+    style.configure("TLabel", background="#f0f0f0")
+
+    button_frame = ttk.Frame(root, padding=20)
+    button_frame.pack(side="left", fill="y", padx=10)
+
+    treeview_frame = ttk.Frame(root, padding=20)
+    treeview_frame.pack(side="right", fill="y", padx=10)
+
+    ttk.Label(button_frame, text="Appointments Scripts", font=title_font).pack(pady=(0, 15))
+
+    ttk.Label(treeview_frame, text="CSV Files (User Data):", font=btn_font).pack(pady=(10, 5))
+
+    treeview = ttk.Treeview(treeview_frame, columns=("File Name",), show="headings", height=12, selectmode="extended")
+    treeview.heading("File Name", text="File Name")
+    treeview.pack(side="top", fill="both", expand=True, pady=5)
+
+    button_width = 20
+
+    # ---- handlers ----
+    def refresh_csv_list():
+        csv_files = [f.name for f in data_dir().glob("*.csv")]
+        for row in treeview.get_children():
+            treeview.delete(row)
+        for file in csv_files:
+            treeview.insert("", "end", values=(file,))
+
+    def upload_csv_file():
+        file_paths = filedialog.askopenfilenames(
+            filetypes=[("CSV files", "*.csv")],
+            title="Select CSV file(s)"
+        )
+        if not file_paths:
+            return
         try:
-            os.remove(file_path)
-            treeview.delete(selected_item)
+            dst = data_dir()
+            for file_path in file_paths:
+                filename = os.path.basename(file_path)
+                shutil.copy(file_path, dst / filename)
+            messagebox.showinfo("Upload Complete", f"Successfully uploaded {len(file_paths)} file(s).")
+            refresh_csv_list()
         except Exception as e:
-            messagebox.showerror("Error", f"Failed to delete {file_name}:\n{e}")
+            messagebox.showerror("Error", str(e))
 
-    messagebox.showinfo("Delete Complete", f"Successfully deleted {len(selected_items)} file(s).")
+    def delete_csv_files():
+        selected_items = treeview.selection()
+        if not selected_items:
+            messagebox.showwarning("Selection Error", "Please select files to delete.")
+            return
+        if not messagebox.askyesno("Confirm Deletion", "Are you sure you want to delete the selected files?"):
+            return
+        for selected_item in selected_items:
+            file_name = treeview.item(selected_item, 'values')[0]
+            file_path = data_dir() / file_name
+            try:
+                if file_path.exists():
+                    file_path.unlink()
+                treeview.delete(selected_item)
+            except Exception as e:
+                messagebox.showerror("Error", f"Failed to delete {file_name}:\n{e}")
+        messagebox.showinfo("Delete Complete", f"Successfully deleted {len(selected_items)} file(s).")
 
-def run_tkinter_script():
-    try:
-        subprocess.Popen(["python", "Appointments/main_v2.py"], shell=True)
-    except Exception as e:
-        messagebox.showerror("Error", f"Failed to run Appointments script:\n{e}")
+    def run_component(exe_name, fallback_rel_py, title):
+        try:
+            cmd = app_or_py(exe_name, fallback_rel_py)
+            subprocess.Popen(cmd, shell=False)
+        except FileNotFoundError as miss:
+            messagebox.showerror(
+                "Component missing",
+                f"{miss}\n\n"
+                "Copy all component EXEs beside ScriptLauncher.exe, or reinstall:\n"
+                f" - {exe_name}"
+            )
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to run {title}:\n{e}")
 
-def run_tkinter2_script():
-    try:
-        subprocess.Popen(["python", "Payments/main_v2.py"], shell=True)
-    except Exception as e:
-        messagebox.showerror("Error", f"Failed to run Payments script:\n{e}")
+    def run_tkinter_script():
+        run_component("Appointments.exe", "Appointments/main_v2.py", "Appointments")
 
-def run_tkinter3_script():
-    try:
-        subprocess.Popen(["python", "Pending/main_v2.py"], shell=True)
-    except Exception as e:
-        messagebox.showerror("Error", f"Failed to run Pending script:\n{e}")
+    def run_tkinter2_script():
+        run_component("Payments.exe", "Payments/main_v2.py", "Payments")
 
-def run_tkinter4_script():
-    try:
-        subprocess.Popen(["python", "pdf.py"], shell=True)
-    except Exception as e:
-        messagebox.showerror("Error", f"Failed to run PDF script:\n{e}")
+    def run_tkinter3_script():
+        run_component("Pending.exe", "Pending/main_v2.py", "Pending")
 
-# Main window
-root = tk.Tk()
-root.title("Script Launcher")
-root.geometry("550x420")
-root.resizable(False, False)
-root.configure(bg="#f0f0f0")
+    def run_tkinter4_script():
+        run_component("PDFViewer.exe", "pdf.py", "PDF Viewer")
 
-style = ttk.Style(root)
-style.theme_use("clam")
-style.configure("TFrame", background="#f0f0f0")
-style.configure("TButton", background="#f0f0f0", padding=6)
-style.configure("TLabel", background="#f0f0f0")
+    # ---- buttons ----
+    ttk.Button(button_frame, text="Upload CSV", command=upload_csv_file, width=button_width).pack(pady=5, ipady=5)
+    ttk.Button(button_frame, text="Appointments", command=run_tkinter_script, width=button_width).pack(pady=5, ipady=5)
+    ttk.Button(button_frame, text="Payments", command=run_tkinter2_script, width=button_width).pack(pady=5, ipady=5)
+    ttk.Button(button_frame, text="Pending", command=run_tkinter3_script, width=button_width).pack(pady=5, ipady=5)
+    ttk.Button(button_frame, text="View PDF", command=run_tkinter4_script, width=button_width).pack(pady=5, ipady=5)
+    ttk.Button(button_frame, text="Exit", command=root.quit, width=button_width).pack(pady=(10, 5), ipady=5)
 
-title_font = font.Font(family="Segoe UI", size=14, weight="bold")
-btn_font = font.Font(family="Segoe UI", size=10)
+    ttk.Button(treeview_frame, text="Delete File", command=delete_csv_files, width=button_width).pack(side="bottom", pady=10)
 
-button_frame = ttk.Frame(root, padding=20)
-button_frame.pack(side="left", fill="y", padx=10)
+    # initial load
+    refresh_csv_list()
 
-treeview_frame = ttk.Frame(root, padding=20)
-treeview_frame.pack(side="right", fill="y", padx=10)
+    # Optional: warn early if components are missing (in frozen build)
+    if getattr(sys, "frozen", False):
+        missing = [n for n in ("Appointments.exe","Payments.exe","Pending.exe","PDFViewer.exe")
+                   if not (base_dir() / n).exists()]
+        if missing:
+            from tkinter import messagebox
+            messagebox.showwarning(
+                "Missing components",
+                "These EXEs are not beside ScriptLauncher.exe:\n- " + "\n- ".join(missing)
+            )
 
-title_label = ttk.Label(button_frame, text="Appointments Scripts", font=title_font)
-title_label.pack(pady=(0, 15))
+    # Show window now that setup is complete
+    root.deiconify()
+    root.mainloop()
 
-button_width = 20
-
-ttk.Button(button_frame, text="Upload CSV", command=upload_csv_file, width=button_width).pack(pady=5, ipady=5)
-ttk.Button(button_frame, text="Appointments", command=run_tkinter_script, width=button_width).pack(pady=5, ipady=5)
-ttk.Button(button_frame, text="Payments", command=run_tkinter2_script, width=button_width).pack(pady=5, ipady=5)
-ttk.Button(button_frame, text="Pending", command=run_tkinter3_script, width=button_width).pack(pady=5, ipady=5)
-ttk.Button(button_frame, text="View PDF", command=run_tkinter4_script, width=button_width).pack(pady=5, ipady=5)
-ttk.Button(button_frame, text="Exit", command=root.quit, width=button_width).pack(pady=(10, 5), ipady=5)
-
-script_dir = os.path.dirname(os.path.abspath(__file__))
-csv_files = [f for f in os.listdir(script_dir) if f.endswith('.csv')]
-
-treeview_label = ttk.Label(treeview_frame, text="CSV Files in Directory:")
-treeview_label.pack(pady=(10, 5))
-
-treeview = ttk.Treeview(treeview_frame, columns=("File Name",), show="headings", height=12, selectmode="extended")
-treeview.heading("File Name", text="File Name")
-treeview.pack(side="top", fill="both", expand=True, pady=5)
-
-for file in csv_files:
-    treeview.insert("", "end", values=(file,))
-
-ttk.Button(treeview_frame, text="Delete File", command=delete_csv_files, width=button_width).pack(side="bottom", pady=10)
-
-root.mainloop()
+if __name__ == "__main__":
+    main()
