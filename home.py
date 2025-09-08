@@ -4,12 +4,17 @@ import sys, os, shutil, subprocess
 from pathlib import Path
 
 from fonts_loader import load_private_fonts  # OK at top level (no Tk side-effects)
+from font_utils import install_fonts
 
 APP_NAME = "ScriptLauncher"
 
 def base_dir() -> Path:
     if getattr(sys, "frozen", False):
-        return Path(sys.executable).parent
+        # When running as a PyInstaller bundle, data files such as fonts are
+        # unpacked to ``sys._MEIPASS``.  Prefer that directory so bundled
+        # resources are located correctly in both one-file and one-folder
+        # distributions.
+        return Path(getattr(sys, "_MEIPASS", Path(sys.executable).parent))
     return Path(__file__).resolve().parent
 
 def data_dir() -> Path:
@@ -58,11 +63,14 @@ def main():
     # Ensure relative resources resolve beside the executable
     os.chdir(base_dir())
 
-    # Load private fonts before creating tkfont.Font objects
+    # Install bundled fonts (best-effort) and load them privately so Tkinter can
+    # use them even on systems where they are not pre-installed.
+    fonts_dir = base_dir() / "Fonts"
+    install_fonts(str(fonts_dir))
     load_private_fonts([
-        base_dir() / "Fonts" / "Armata-Regular.ttf",
-        base_dir() / "Fonts" / "Novecentowide-Bold.ttf",
-        base_dir() / "Fonts" / "Novecentowide-DemiBold_0.ttf",
+        fonts_dir / "Armata-Regular.ttf",
+        fonts_dir / "Novecentowide-Bold.ttf",
+        fonts_dir / "Novecentowide-DemiBold_0.ttf",
     ])
 
     def choose_family(preferred_names, fallbacks=("Segoe UI", "Arial", "Tahoma")):

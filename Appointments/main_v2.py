@@ -9,7 +9,7 @@ import sys
 from pathlib import Path
 
 sys.path.append(str(Path(__file__).resolve().parents[1]))
-from common_paths import data_dir, find_latest_csv
+from common_paths import base_dir, data_dir, find_latest_csv
 
 # Example A: open the latest "appointments_" CSV automatically
 csv_path = find_latest_csv(prefix="appointments_")
@@ -22,7 +22,7 @@ if not csv_path:
 
 class PDF(FPDF):
     def header(self):
-        self.image('Header.jpg', 27.5, 0, 150, 35)
+        self.image(str(base_dir() / 'Header.jpg'), 27.5, 0, 150, 35)
         self.ln(20)
         self.set_font('Novecento Wide Demi Bold', 'B', 9)
         self.cell(0, 0, 'LIST OF APPOINTMENTS FOR ' + str(var_date), 'L')
@@ -48,14 +48,15 @@ def generate_pdf():
         c_var_date = datetime.strptime(selected_date, "%m/%d/%y").strftime("%Y%m%d")
 
         csv_filename = f'appointments_{var_date}.csv'
-        
-        if not os.path.exists(csv_filename):
+        csv_path = data_dir() / csv_filename
+
+        if not csv_path.exists():
             messagebox.showerror("File Not Found", f"CSV file not found for date: {var_date}")
             return
 
         pdf = PDF(orientation='P', unit='mm', format='A4')
 
-        root_dir = Path(__file__).resolve().parents[1]
+        root_dir = base_dir()
         font_dir = root_dir / "Fonts"
         pdf.add_font(
             'Novecento Wide Demi Bold',
@@ -81,7 +82,7 @@ def generate_pdf():
 
         pdf.set_font('Trebuchet MS Regular', '', 7)
 
-        with open(csv_filename, 'r', newline='', encoding='utf8') as f:
+        with open(csv_path, 'r', newline='', encoding='utf8') as f:
             reader = csv.reader(f)
             next(reader)
             sortedlist = filter(None, reader)
