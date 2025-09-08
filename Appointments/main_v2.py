@@ -54,12 +54,24 @@ def generate_pdf():
             return
 
         pdf = PDF(orientation='P', unit='mm', format='A4')
-        pdf.add_font('Novecento Wide Demi Bold', 'B',
-                     r"C:\Users\donit\AppData\Local\Microsoft\Windows\Fonts\Novecentowide-Bold.ttf", uni=True)
-        pdf.add_font('Armata Regular', '', r"C:\Users\donit\AppData\Local\Microsoft\Windows\Fonts\Armata-Regular.ttf", uni=True)
-        pdf.add_font('Trebuchet MS Bold', 'B', r"C:\Windows\Fonts\trebucbd.ttf", uni=True)
-        pdf.add_font('Trebuchet MS Bold Italic', 'BI', r"C:\Windows\Fonts\trebucbi.ttf", uni=True)
-        pdf.add_font('Trebuchet MS Regular', '', r"C:\Windows\Fonts\trebuc.ttf", uni=True)
+
+        root_dir = Path(__file__).resolve().parents[1]
+        font_dir = root_dir / "Fonts"
+        pdf.add_font(
+            'Novecento Wide Demi Bold',
+            'B',
+            str(font_dir / 'Novecentowide-Bold.ttf'),
+            uni=True,
+        )
+        pdf.add_font(
+            'Armata Regular',
+            '',
+            str(font_dir / 'Armata-Regular.ttf'),
+            uni=True,
+        )
+        pdf.add_font('Trebuchet MS Bold', 'B', r"C:\\Windows\\Fonts\\trebucbd.ttf", uni=True)
+        pdf.add_font('Trebuchet MS Bold Italic', 'BI', r"C:\\Windows\\Fonts\\trebucbi.ttf", uni=True)
+        pdf.add_font('Trebuchet MS Regular', '', r"C:\\Windows\\Fonts\\trebuc.ttf", uni=True)
 
         pdf.add_page()
         pdf.alias_nb_pages()
@@ -124,5 +136,15 @@ cal.pack(pady=10)
 
 btn_generate = tk.Button(frame, text="Load & Generate PDF", command=generate_pdf, width=30, pady=10)
 btn_generate.pack(pady=10)
+def center_window(win):
+    win.update_idletasks()
+    width = win.winfo_width()
+    height = win.winfo_height()
+    x = (win.winfo_screenwidth() - width) // 2
+    y = (win.winfo_screenheight() - height) // 2
+    win.geometry(f"{width}x{height}+{x}+{y}")
+
+center_window(root)
+root.resizable(False, False)
 
 root.mainloop()
