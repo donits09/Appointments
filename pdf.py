@@ -53,8 +53,13 @@ def show_pdf_list(folder_name):
 
     window = tk.Toplevel()
     window.title(f"{folder_name} PDFs")
-    window.geometry("400x220")
+    width, height = 400, 220
+    window.geometry(f"{width}x{height}")
     window.resizable(False, False)
+    window.update_idletasks()
+    x = (window.winfo_screenwidth() - width) // 2
+    y = (window.winfo_screenheight() - height) // 2
+    window.geometry(f"{width}x{height}+{x}+{y}")
 
     ttk.Label(window, text=f"Select a PDF from {folder_name}", font=("Segoe UI", 11)).pack(pady=10)
 
@@ -68,8 +73,13 @@ def show_pdf_list(folder_name):
 # Main Window
 root = tk.Tk()
 root.title("Open a PDF File")
-root.geometry("360x250")
+width, height = 360, 250
+root.geometry(f"{width}x{height}")
 root.resizable(False, False)
+root.update_idletasks()
+x = (root.winfo_screenwidth() - width) // 2
+y = (root.winfo_screenheight() - height) // 2
+root.geometry(f"{width}x{height}+{x}+{y}")
 
 ttk.Label(root, text="Choose a PDF to view:", font=("Segoe UI", 13, "bold")).pack(pady=15)
 

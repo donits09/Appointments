@@ -136,5 +136,15 @@ cal.pack(pady=10)
 
 btn_generate = tk.Button(frame, text="Generate Payment PDF", command=generate_payment_pdf, width=30, pady=10)
 btn_generate.pack(pady=10)
+def center_window(win):
+    win.update_idletasks()
+    width = win.winfo_width()
+    height = win.winfo_height()
+    x = (win.winfo_screenwidth() - width) // 2
+    y = (win.winfo_screenheight() - height) // 2
+    win.geometry(f"{width}x{height}+{x}+{y}")
+
+center_window(root)
+root.resizable(False, False)
 
 root.mainloop()
