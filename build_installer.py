@@ -1,4 +1,6 @@
+
 """Build standalone executables for the suite using PyInstaller."""
+
 from __future__ import annotations
 
 import os
