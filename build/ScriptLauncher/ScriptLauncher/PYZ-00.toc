@@ -76,6 +76,10 @@
    'C:\\Users\\Asian '
    'Land\\AppData\\Local\\Programs\\Python\\Python311\\Lib\\ctypes\\_endian.py',
    'PYMODULE'),
+  ('ctypes.wintypes',
+   'C:\\Users\\Asian '
+   'Land\\AppData\\Local\\Programs\\Python\\Python311\\Lib\\ctypes\\wintypes.py',
+   'PYMODULE'),
   ('dataclasses',
    'C:\\Users\\Asian '
    'Land\\AppData\\Local\\Programs\\Python\\Python311\\Lib\\dataclasses.py',
