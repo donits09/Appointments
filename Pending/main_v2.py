@@ -125,17 +125,20 @@ def generate_pending_pdf():
 
 # Tkinter GUI
 root = tk.Tk()
+root.withdraw()
 root.title("Pending Appointments PDF Generator")
+root.iconbitmap(str(base_dir() / "favicon.ico"))
+root.configure(bg="white")
 
-frame = tk.Frame(root, padx=20, pady=20)
+frame = tk.Frame(root, padx=20, pady=20, bg="white")
 frame.pack()
 
 # Date picker
-tk.Label(frame, text="Select a Date:").pack()
+tk.Label(frame, text="Select a Date:", bg="white").pack()
 cal = Calendar(frame, selectmode="day", date_pattern="mm/dd/yy")
 cal.pack(pady=10)
 
-btn_generate = tk.Button(frame, text="Generate Pending PDF", command=generate_pending_pdf, width=30, pady=10)
+btn_generate = tk.Button(frame, text="Generate Pending PDF", command=generate_pending_pdf, width=30, pady=10, bg="white")
 btn_generate.pack(pady=10)
 def center_window(win):
     win.update_idletasks()
@@ -147,5 +150,5 @@ def center_window(win):
 
 center_window(root)
 root.resizable(False, False)
-
+root.deiconify()
 root.mainloop()

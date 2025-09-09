@@ -68,7 +68,7 @@ def main():
     # ONE root only; hide during setup
     root = tk.Tk()
     root.withdraw()
-
+    root.iconbitmap(str(base_dir() / "favicon.ico"))
     # Ensure relative resources resolve beside the executable
     os.chdir(base_dir())
 
@@ -108,14 +108,14 @@ def main():
     y = (root.winfo_screenheight() - height) // 2
     root.geometry(f"{width}x{height}+{x}+{y}")
     root.resizable(False, False)
-    root.configure(bg="#e9ecef")
+    root.configure(bg="#ffffff")
 
     style = ttk.Style(root)
     style.theme_use("clam")
-    style.configure("TFrame", background="#e9ecef")
+    style.configure("TFrame", background="#ffffff")
     style.configure("TButton", background="#ffffff", padding=6, relief="flat")
     style.map("TButton", background=[("active", "#d4d4d4")])
-    style.configure("TLabel", background="#e9ecef")
+    style.configure("TLabel", background="#ffffff")
     style.configure("Treeview", background="#ffffff", fieldbackground="#ffffff", bordercolor="#d9d9d9")
     style.configure("Treeview.Heading", font=btn_font, background="#d9d9d9")
 

@@ -123,18 +123,21 @@ def generate_payment_pdf():
 
 # Tkinter GUI
 root = tk.Tk()
+root.withdraw()
 root.title("Payment Appointments PDF Generator")
+root.iconbitmap(str(base_dir() / "favicon.ico"))
+root.configure(bg="white")
 
-frame = tk.Frame(root, padx=20, pady=20)
+frame = tk.Frame(root, padx=20, pady=20, bg="white")
 frame.pack()
 
 # Date picker
-tk.Label(frame, text="Select a Date:").pack()
+tk.Label(frame, text="Select a Date:", bg="white").pack()
 from tkcalendar import Calendar
 cal = Calendar(frame, selectmode="day", date_pattern="mm/dd/yy")
 cal.pack(pady=10)
 
-btn_generate = tk.Button(frame, text="Generate Payment PDF", command=generate_payment_pdf, width=30, pady=10)
+btn_generate = tk.Button(frame, text="Generate Payment PDF", command=generate_payment_pdf, width=30, pady=10, bg="white")
 btn_generate.pack(pady=10)
 def center_window(win):
     win.update_idletasks()
@@ -146,5 +149,5 @@ def center_window(win):
 
 center_window(root)
 root.resizable(False, False)
-
+root.deiconify()
 root.mainloop()
