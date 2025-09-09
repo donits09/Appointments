@@ -9,6 +9,33 @@ from font_utils import install_fonts
 APP_NAME = "ScriptLauncher"
 
 
+
+def _desktop_path() -> Path | None:
+    """Return the current user's Desktop directory or ``None`` if unknown."""
+    try:
+        from ctypes import windll, wintypes, create_unicode_buffer  # type: ignore
+
+        CSIDL_DESKTOP = 0x10  # Desktop directory
+        SHGFP_TYPE_CURRENT = 0
+        buf = create_unicode_buffer(wintypes.MAX_PATH)
+        if windll.shell32.SHGetFolderPathW(
+            None, CSIDL_DESKTOP, None, SHGFP_TYPE_CURRENT, buf
+        ) == 0:
+            p = Path(buf.value)
+            if p.exists():
+                return p
+    except Exception:
+        pass
+
+    env_path = Path(os.path.expanduser("~")) / "Desktop"
+    return env_path if env_path.exists() else None
+
+
+def _ps_quote(p: Path) -> str:
+    """Return a single-quoted string safe for PowerShell."""
+    return str(p).replace("'", "''")
+
+
 def ensure_desktop_shortcut() -> None:
     """Create a shortcut to this launcher on the user's desktop (best effort)."""
 
@@ -17,7 +44,11 @@ def ensure_desktop_shortcut() -> None:
         # Only create a shortcut for a frozen EXE, skip when run with python.exe
         return
 
-    desktop = Path(os.path.join(os.environ.get("USERPROFILE", ""), "Desktop"))
+
+    desktop = _desktop_path()
+    if not desktop:
+        return
+
     shortcut_path = desktop / f"{APP_NAME}.lnk"
     icon = base_dir() / "favicon.ico"
 
@@ -42,12 +73,14 @@ def ensure_desktop_shortcut() -> None:
         try:
             ps_parts = [
                 "$ws=New-Object -ComObject WScript.Shell;",
-                f"$s=$ws.CreateShortcut('{shortcut_path}');",
-                f"$s.TargetPath='{exe_path}';",
-                f"$s.WorkingDirectory='{exe_path.parent}';",
+
+                f"$s=$ws.CreateShortcut('{_ps_quote(shortcut_path)}');",
+                f"$s.TargetPath='{_ps_quote(exe_path)}';",
+                f"$s.WorkingDirectory='{_ps_quote(exe_path.parent)}';",
             ]
             if icon.exists():
-                ps_parts.append(f"$s.IconLocation='{icon}';")
+                ps_parts.append(f"$s.IconLocation='{_ps_quote(icon)}';")
+
             ps_parts.append("$s.Save()")
             subprocess.run([
                 "powershell",
@@ -58,8 +91,6 @@ def ensure_desktop_shortcut() -> None:
         except Exception:
             # Best effort only – failure to create the shortcut should not abort the app
             pass
-
-
 
 def base_dir() -> Path:
     if getattr(sys, "frozen", False):
