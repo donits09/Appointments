@@ -137,15 +137,27 @@ from tkcalendar import Calendar
 cal = Calendar(frame, selectmode="day", date_pattern="mm/dd/yy")
 cal.pack(pady=10)
 
-btn_generate = tk.Button(frame, text="Generate Payment PDF", command=generate_payment_pdf, width=30, pady=10, bg="white")
+btn_generate = tk.Button(
+    frame,
+    text="Generate Payment PDF",
+    command=generate_payment_pdf,
+    width=30,
+    pady=10,
+    bg="white",
+    bd=1,
+    relief="solid",
+)
 btn_generate.pack(pady=10)
+
+
 def center_window(win):
     win.update_idletasks()
-    width = win.winfo_width()
-    height = win.winfo_height()
+    width = win.winfo_reqwidth() + 20
+    height = win.winfo_reqheight() + 20
     x = (win.winfo_screenwidth() - width) // 2
     y = (win.winfo_screenheight() - height) // 2
     win.geometry(f"{width}x{height}+{x}+{y}")
+
 
 center_window(root)
 root.resizable(False, False)
