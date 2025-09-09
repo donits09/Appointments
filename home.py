@@ -11,6 +11,7 @@ APP_NAME = "ScriptLauncher"
 
 def ensure_desktop_shortcut() -> None:
     """Create a shortcut to this launcher on the user's desktop (best effort)."""
+
     exe_path = Path(sys.executable)
     if exe_path.suffix.lower() != ".exe":
         # Only create a shortcut for a frozen EXE, skip when run with python.exe
@@ -21,10 +22,12 @@ def ensure_desktop_shortcut() -> None:
     icon = base_dir() / "favicon.ico"
 
     if shortcut_path.exists():
+
         return
 
     try:
         import win32com.client  # type: ignore
+
 
         shell = win32com.client.Dispatch("WScript.Shell")
         shortcut = shell.CreateShortCut(str(shortcut_path))
@@ -55,6 +58,7 @@ def ensure_desktop_shortcut() -> None:
         except Exception:
             # Best effort only – failure to create the shortcut should not abort the app
             pass
+
 
 
 def base_dir() -> Path:
