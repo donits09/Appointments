@@ -9,6 +9,7 @@ from font_utils import install_fonts
 APP_NAME = "ScriptLauncher"
 
 
+
 def _desktop_path() -> Path | None:
     """Return the current user's Desktop directory or ``None`` if unknown."""
     try:
@@ -37,10 +38,12 @@ def _ps_quote(p: Path) -> str:
 
 def ensure_desktop_shortcut() -> None:
     """Create a shortcut to this launcher on the user's desktop (best effort)."""
+
     exe_path = Path(sys.executable)
     if exe_path.suffix.lower() != ".exe":
         # Only create a shortcut for a frozen EXE, skip when run with python.exe
         return
+
 
     desktop = _desktop_path()
     if not desktop:
@@ -50,10 +53,12 @@ def ensure_desktop_shortcut() -> None:
     icon = base_dir() / "favicon.ico"
 
     if shortcut_path.exists():
+
         return
 
     try:
         import win32com.client  # type: ignore
+
 
         shell = win32com.client.Dispatch("WScript.Shell")
         shortcut = shell.CreateShortCut(str(shortcut_path))
@@ -68,12 +73,14 @@ def ensure_desktop_shortcut() -> None:
         try:
             ps_parts = [
                 "$ws=New-Object -ComObject WScript.Shell;",
+
                 f"$s=$ws.CreateShortcut('{_ps_quote(shortcut_path)}');",
                 f"$s.TargetPath='{_ps_quote(exe_path)}';",
                 f"$s.WorkingDirectory='{_ps_quote(exe_path.parent)}';",
             ]
             if icon.exists():
                 ps_parts.append(f"$s.IconLocation='{_ps_quote(icon)}';")
+
             ps_parts.append("$s.Save()")
             subprocess.run([
                 "powershell",
@@ -84,7 +91,6 @@ def ensure_desktop_shortcut() -> None:
         except Exception:
             # Best effort only – failure to create the shortcut should not abort the app
             pass
-
 
 def base_dir() -> Path:
     if getattr(sys, "frozen", False):
