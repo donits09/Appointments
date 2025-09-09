@@ -113,7 +113,13 @@ def main():
     style = ttk.Style(root)
     style.theme_use("clam")
     style.configure("TFrame", background="#ffffff")
-    style.configure("TButton", background="#ffffff", padding=6, relief="flat")
+    style.configure(
+        "TButton",
+        background="#ffffff",
+        padding=6,
+        relief="solid",
+        borderwidth=1,
+    )
     style.map("TButton", background=[("active", "#d4d4d4")])
     style.configure("TLabel", background="#ffffff")
     style.configure("Treeview", background="#ffffff", fieldbackground="#ffffff", bordercolor="#d9d9d9")

@@ -79,6 +79,9 @@ root.title("Open a PDF File")
 width, height = 360, 250
 root.resizable(False, False)
 
+style = ttk.Style(root)
+style.configure("TButton", relief="solid", borderwidth=1)
+
 ttk.Label(root, text="Choose a PDF to view:", font=("Segoe UI", 13, "bold")).pack(pady=15)
 
 ttk.Button(root, text="📄 Appointments", command=lambda: show_pdf_list("Appointments"), width=30).pack(pady=5, ipady=5)
