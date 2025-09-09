@@ -4,6 +4,8 @@ import os
 import glob
 import platform
 import subprocess
+import sys
+from pathlib import Path
 
 def open_pdf(filepath):
     try:
@@ -15,6 +17,15 @@ def open_pdf(filepath):
             subprocess.run(["xdg-open", filepath])
     except Exception as e:
         messagebox.showerror("Error", f"Could not open PDF:\n{e}")
+
+def base_dir() -> Path:
+    if getattr(sys, "frozen", False):
+        return Path(getattr(sys, "_MEIPASS", Path(sys.executable).parent))
+    return Path(__file__).resolve().parent
+
+
+ICON_PATH = base_dir() / "favicon.ico"
+
 
 def show_pdf_list(folder_name):
     os.makedirs(folder_name, exist_ok=True)
@@ -53,6 +64,7 @@ def show_pdf_list(folder_name):
 
     window = tk.Toplevel()
     window.withdraw()
+    window.iconbitmap(str(ICON_PATH))
     window.title(f"{folder_name} PDFs")
     width, height = 400, 220
     window.resizable(False, False)
@@ -75,6 +87,7 @@ def show_pdf_list(folder_name):
 # Main Window
 root = tk.Tk()
 root.withdraw()
+root.iconbitmap(str(ICON_PATH))
 root.title("Open a PDF File")
 width, height = 360, 250
 root.resizable(False, False)

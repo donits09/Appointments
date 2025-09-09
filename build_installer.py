@@ -13,6 +13,7 @@ DATAS = [
     f"Fonts{os.sep}Armata-Regular.ttf{SEP}Fonts",
     f"Fonts{os.sep}Novecentowide-Bold.ttf{SEP}Fonts",
     f"Fonts{os.sep}Novecentowide-DemiBold_0.ttf{SEP}Fonts",
+    f"favicon.ico{SEP}.",
 ]
 
 
