@@ -9,6 +9,54 @@ from font_utils import install_fonts
 APP_NAME = "ScriptLauncher"
 
 
+def ensure_desktop_shortcut() -> None:
+    """Create a shortcut to this launcher on the user's desktop (best effort)."""
+    exe_path = Path(sys.executable)
+    if exe_path.suffix.lower() != ".exe":
+        # Only create a shortcut for a frozen EXE, skip when run with python.exe
+        return
+
+    desktop = Path(os.path.join(os.environ.get("USERPROFILE", ""), "Desktop"))
+    shortcut_path = desktop / f"{APP_NAME}.lnk"
+    icon = base_dir() / "favicon.ico"
+
+    if shortcut_path.exists():
+        return
+
+    try:
+        import win32com.client  # type: ignore
+
+        shell = win32com.client.Dispatch("WScript.Shell")
+        shortcut = shell.CreateShortCut(str(shortcut_path))
+        shortcut.TargetPath = str(exe_path)
+        shortcut.WorkingDirectory = str(exe_path.parent)
+        if icon.exists():
+            shortcut.IconLocation = str(icon)
+        shortcut.Save()
+        return
+    except Exception:
+        # fall back to PowerShell if pywin32 is unavailable or fails
+        try:
+            ps_parts = [
+                "$ws=New-Object -ComObject WScript.Shell;",
+                f"$s=$ws.CreateShortcut('{shortcut_path}');",
+                f"$s.TargetPath='{exe_path}';",
+                f"$s.WorkingDirectory='{exe_path.parent}';",
+            ]
+            if icon.exists():
+                ps_parts.append(f"$s.IconLocation='{icon}';")
+            ps_parts.append("$s.Save()")
+            subprocess.run([
+                "powershell",
+                "-NoProfile",
+                "-Command",
+                " ".join(ps_parts),
+            ])
+        except Exception:
+            # Best effort only – failure to create the shortcut should not abort the app
+            pass
+
+
 def base_dir() -> Path:
     if getattr(sys, "frozen", False):
         # When running as a PyInstaller bundle, data files such as fonts are
@@ -61,6 +109,8 @@ def app_or_py(exe_name: str, fallback_rel_py: str) -> list[str]:
     return [sys.executable, str(base_dir() / fallback_rel_py)]
 
 def main():
+    ensure_desktop_shortcut()
+
     import tkinter as tk
     from tkinter import ttk, messagebox, filedialog
     import tkinter.font as tkfont
