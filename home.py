@@ -11,30 +11,54 @@ APP_NAME = "ScriptLauncher"
 
 def ensure_desktop_shortcut() -> None:
     """Create a shortcut to this launcher on the user's desktop (best effort)."""
-    if not getattr(sys, "frozen", False):
-        # Only create a shortcut for the packaged EXE
+
+    exe_path = Path(sys.executable)
+    if exe_path.suffix.lower() != ".exe":
+        # Only create a shortcut for a frozen EXE, skip when run with python.exe
+        return
+
+    desktop = Path(os.path.join(os.environ.get("USERPROFILE", ""), "Desktop"))
+    shortcut_path = desktop / f"{APP_NAME}.lnk"
+    icon = base_dir() / "favicon.ico"
+
+    if shortcut_path.exists():
+
         return
 
     try:
         import win32com.client  # type: ignore
 
-        desktop = Path(os.path.join(os.environ.get("USERPROFILE", ""), "Desktop"))
-        shortcut_path = desktop / f"{APP_NAME}.lnk"
-
-        if shortcut_path.exists():
-            return
 
         shell = win32com.client.Dispatch("WScript.Shell")
-        shortcut = shell.CreateShortcut(str(shortcut_path))
-        shortcut.TargetPath = str(Path(sys.executable))
-        shortcut.WorkingDirectory = str(Path(sys.executable).parent)
-        icon = base_dir() / "favicon.ico"
+        shortcut = shell.CreateShortCut(str(shortcut_path))
+        shortcut.TargetPath = str(exe_path)
+        shortcut.WorkingDirectory = str(exe_path.parent)
         if icon.exists():
             shortcut.IconLocation = str(icon)
-        shortcut.save()
+        shortcut.Save()
+        return
     except Exception:
-        # Best effort only – failure to create the shortcut should not abort the app
-        pass
+        # fall back to PowerShell if pywin32 is unavailable or fails
+        try:
+            ps_parts = [
+                "$ws=New-Object -ComObject WScript.Shell;",
+                f"$s=$ws.CreateShortcut('{shortcut_path}');",
+                f"$s.TargetPath='{exe_path}';",
+                f"$s.WorkingDirectory='{exe_path.parent}';",
+            ]
+            if icon.exists():
+                ps_parts.append(f"$s.IconLocation='{icon}';")
+            ps_parts.append("$s.Save()")
+            subprocess.run([
+                "powershell",
+                "-NoProfile",
+                "-Command",
+                " ".join(ps_parts),
+            ])
+        except Exception:
+            # Best effort only – failure to create the shortcut should not abort the app
+            pass
+
 
 
 def base_dir() -> Path:
