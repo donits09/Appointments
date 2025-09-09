@@ -7,24 +7,31 @@ from pathlib import Path
 
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 from common_paths import base_dir
+from font_utils import safe_add_font
 
 now = date.today()
 var_date = now.strftime("%Y-%m-%d")
+
+novecento_font = "Helvetica"
+armata_font = "Helvetica"
+treb_bold_font = "Helvetica"
+treb_bolditalic_font = "Helvetica"
+treb_regular_font = "Helvetica"
 
 
 class PDF(FPDF):
     def header(self):
         self.image(str(base_dir() / 'Header.jpg'), 27.5, 0, 150, 35)
         self.ln(20)
-        self.set_font('Novecento Wide Demi Bold', 'B', 9)
+        self.set_font(novecento_font, 'B', 9)
         self.cell(0, 0, 'LIST OF APPOINTMENTS FOR ' + str(var_date), 'L')
         self.ln(4)
-        self.set_font('Armata Regular', '', 7)
+        self.set_font(armata_font, '', 7)
         self.cell(0, 0, 'Payments', 'L')
-        self.set_font('Armata Regular', '', 7)
+        self.set_font(armata_font, '', 7)
         self.cell(4, 0, 'Page ' + str(self.page_no()) + ' of {nb}', 0, 0, 'R')
         pdf.ln(2)
-        self.set_font('Trebuchet MS Bold', 'B', 7)
+        self.set_font(treb_bold_font, 'B', 7)
         self.set_fill_color(180)
         self.cell(0, 5, 'No.        Res         Service                  Date                    '
                         'Start                    End                     Status                 '
@@ -37,11 +44,11 @@ font_dir = root_dir / 'Fonts'
 
 pdf = PDF(orientation='P', unit='mm', format='A4')
 
-pdf.add_font('Novecento Wide Demi Bold', 'B', str(font_dir / 'Novecentowide-Bold.ttf'), uni=True)
-pdf.add_font('Armata Regular', '', str(font_dir / 'Armata-Regular.ttf'), uni=True)
-pdf.add_font('Trebuchet MS Bold', 'B', r"C:\\Windows\\Fonts\\trebucbd.ttf", uni=True)
-pdf.add_font('Trebuchet MS Bold Italic', 'BI', r"C:\\Windows\\Fonts\\trebucbi.ttf", uni=True)
-pdf.add_font('Trebuchet MS Regular', '', r"C:\\Windows\\Fonts\\trebuc.ttf", uni=True)
+novecento_font = safe_add_font(pdf, 'Novecento Wide Demi Bold', 'B', font_dir / 'Novecentowide-Bold.ttf')
+armata_font = safe_add_font(pdf, 'Armata Regular', '', font_dir / 'Armata-Regular.ttf')
+treb_bold_font = safe_add_font(pdf, 'Trebuchet MS Bold', 'B', r"C:\\Windows\\Fonts\\trebucbd.ttf")
+treb_bolditalic_font = safe_add_font(pdf, 'Trebuchet MS Bold Italic', 'BI', r"C:\\Windows\\Fonts\\trebucbi.ttf")
+treb_regular_font = safe_add_font(pdf, 'Trebuchet MS Regular', '', r"C:\\Windows\\Fonts\\trebuc.ttf")
 pdf.add_page()
 pdf.alias_nb_pages()
 pdf.set_margins(10, 12, 12)
@@ -53,7 +60,7 @@ col_width3 = page_width / 10
 
 th = 5
 
-pdf.set_font('Trebuchet MS Regular', '', 7)
+pdf.set_font(treb_regular_font, '', 7)
 
 
 try:
@@ -83,7 +90,7 @@ except:
     print("Please check your file name or the date format in your CSV file.")
 
 
-pdf.set_font('Trebuchet MS Bold Italic', 'BI', 7)
+pdf.set_font(treb_bolditalic_font, 'BI', 7)
 pdf.ln(5)
 pdf.cell(page_width, 0.0, '***Nothing Follows***', align='C')
 c_var_date = now.strftime("%Y%m%d")

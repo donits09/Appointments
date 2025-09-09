@@ -1,6 +1,7 @@
 import os
 import shutil
 import sys
+from pathlib import Path
 
 
 def _system_fonts_dir() -> str:
@@ -32,3 +33,21 @@ def install_fonts(font_dir: str) -> None:
     except Exception:
         # Completely ignore any failure in font installation
         pass
+
+
+def safe_add_font(pdf, family: str, style: str, font_path: str | os.PathLike, *, uni: bool = True) -> str:
+    """Register *font_path* with ``pdf`` if it exists, returning a usable family name.
+
+    If the font file is missing or cannot be loaded, the built-in ``Helvetica``
+    family is returned so callers can safely fall back without raising
+    ``RuntimeError`` from :meth:`fpdf.FPDF.add_font` or :meth:`fpdf.FPDF.set_font`.
+    """
+
+    path = Path(font_path)
+    if path.exists():
+        try:
+            pdf.add_font(family, style, str(path), uni=uni)
+            return family
+        except Exception:
+            pass
+    return "Helvetica"
