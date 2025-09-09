@@ -383,6 +383,9 @@
    'C:\\Users\\Asian '
    'Land\\AppData\\Local\\Programs\\Python\\Python311\\Lib\\fnmatch.py',
    'PYMODULE'),
+  ('font_utils',
+   'C:\\Users\\Asian Land\\PycharmProjects\\Appointments\\font_utils.py',
+   'PYMODULE'),
   ('fpdf',
    'C:\\Users\\Asian '
    'Land\\AppData\\Local\\Programs\\Python\\Python311\\Lib\\site-packages\\fpdf\\__init__.py',

@@ -5,7 +5,7 @@ a = Analysis(
     ['Pending\\main_v2.py'],
     pathex=[],
     binaries=[],
-    datas=[('Header.jpg', '.'), ('Fonts\\Armata-Regular.ttf', 'Fonts'), ('Fonts\\Novecentowide-Bold.ttf', 'Fonts'), ('Fonts\\Novecentowide-DemiBold_0.ttf', 'Fonts')],
+    datas=[('Header.jpg', '.'), ('Fonts\\Armata-Regular.ttf', 'Fonts'), ('Fonts\\Novecentowide-Bold.ttf', 'Fonts'), ('Fonts\\Novecentowide-DemiBold_0.ttf', 'Fonts'), ('favicon.ico', '.')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},

@@ -23,7 +23,6 @@ exe = EXE(
     a.datas,
     [],
     name='PDFViewer',
-    icon='favicon.ico',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
