@@ -52,14 +52,10 @@ def show_pdf_list(folder_name):
                     messagebox.showerror("Error", f"Could not delete PDF:\n{e}")
 
     window = tk.Toplevel()
+    window.withdraw()
     window.title(f"{folder_name} PDFs")
     width, height = 400, 220
-    window.geometry(f"{width}x{height}")
     window.resizable(False, False)
-    window.update_idletasks()
-    x = (window.winfo_screenwidth() - width) // 2
-    y = (window.winfo_screenheight() - height) // 2
-    window.geometry(f"{width}x{height}+{x}+{y}")
 
     ttk.Label(window, text=f"Select a PDF from {folder_name}", font=("Segoe UI", 11)).pack(pady=10)
 
@@ -70,16 +66,18 @@ def show_pdf_list(folder_name):
     ttk.Button(window, text="📂 Open", command=open_selected_pdf).pack(pady=5, ipady=5)
     ttk.Button(window, text="🗑️ Delete", command=delete_selected_pdf).pack(pady=5, ipady=5)
 
+    window.update_idletasks()
+    x = (window.winfo_screenwidth() - width) // 2
+    y = (window.winfo_screenheight() - height) // 2
+    window.geometry(f"{width}x{height}+{x}+{y}")
+    window.deiconify()
+
 # Main Window
 root = tk.Tk()
+root.withdraw()
 root.title("Open a PDF File")
 width, height = 360, 250
-root.geometry(f"{width}x{height}")
 root.resizable(False, False)
-root.update_idletasks()
-x = (root.winfo_screenwidth() - width) // 2
-y = (root.winfo_screenheight() - height) // 2
-root.geometry(f"{width}x{height}+{x}+{y}")
 
 ttk.Label(root, text="Choose a PDF to view:", font=("Segoe UI", 13, "bold")).pack(pady=15)
 
@@ -87,4 +85,9 @@ ttk.Button(root, text="📄 Appointments", command=lambda: show_pdf_list("Appoin
 ttk.Button(root, text="💰 Payments", command=lambda: show_pdf_list("Payments"), width=30).pack(pady=5, ipady=5)
 ttk.Button(root, text="🕒 Pending", command=lambda: show_pdf_list("Pending"), width=30).pack(pady=5, ipady=5)
 
+root.update_idletasks()
+x = (root.winfo_screenwidth() - width) // 2
+y = (root.winfo_screenheight() - height) // 2
+root.geometry(f"{width}x{height}+{x}+{y}")
+root.deiconify()
 root.mainloop()
