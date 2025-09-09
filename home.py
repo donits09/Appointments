@@ -9,6 +9,34 @@ from font_utils import install_fonts
 APP_NAME = "ScriptLauncher"
 
 
+def ensure_desktop_shortcut() -> None:
+    """Create a shortcut to this launcher on the user's desktop (best effort)."""
+    if not getattr(sys, "frozen", False):
+        # Only create a shortcut for the packaged EXE
+        return
+
+    try:
+        import win32com.client  # type: ignore
+
+        desktop = Path(os.path.join(os.environ.get("USERPROFILE", ""), "Desktop"))
+        shortcut_path = desktop / f"{APP_NAME}.lnk"
+
+        if shortcut_path.exists():
+            return
+
+        shell = win32com.client.Dispatch("WScript.Shell")
+        shortcut = shell.CreateShortcut(str(shortcut_path))
+        shortcut.TargetPath = str(Path(sys.executable))
+        shortcut.WorkingDirectory = str(Path(sys.executable).parent)
+        icon = base_dir() / "favicon.ico"
+        if icon.exists():
+            shortcut.IconLocation = str(icon)
+        shortcut.save()
+    except Exception:
+        # Best effort only – failure to create the shortcut should not abort the app
+        pass
+
+
 def base_dir() -> Path:
     if getattr(sys, "frozen", False):
         # When running as a PyInstaller bundle, data files such as fonts are
@@ -61,6 +89,8 @@ def app_or_py(exe_name: str, fallback_rel_py: str) -> list[str]:
     return [sys.executable, str(base_dir() / fallback_rel_py)]
 
 def main():
+    ensure_desktop_shortcut()
+
     import tkinter as tk
     from tkinter import ttk, messagebox, filedialog
     import tkinter.font as tkfont
