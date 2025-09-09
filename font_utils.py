@@ -45,6 +45,14 @@ def safe_add_font(pdf, family: str, style: str, font_path: str | os.PathLike, *,
 
     path = Path(font_path)
     if path.exists():
+
+        pkl = path.with_suffix(".pkl")
+        if pkl.exists():
+            try:
+                pkl.unlink()
+            except Exception:
+                pass
+
         try:
             pdf.add_font(family, style, str(path), uni=uni)
             return family
