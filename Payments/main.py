@@ -2,6 +2,11 @@ from fpdf import FPDF
 import csv
 from datetime import datetime
 from datetime import date
+import sys
+from pathlib import Path
+
+sys.path.append(str(Path(__file__).resolve().parents[1]))
+from common_paths import base_dir
 
 now = date.today()
 var_date = now.strftime("%Y-%m-%d")
@@ -9,7 +14,7 @@ var_date = now.strftime("%Y-%m-%d")
 
 class PDF(FPDF):
     def header(self):
-        self.image('Header.jpg', 27.5, 0, 150, 35)
+        self.image(str(base_dir() / 'Header.jpg'), 27.5, 0, 150, 35)
         self.ln(20)
         self.set_font('Novecento Wide Demi Bold', 'B', 9)
         self.cell(0, 0, 'LIST OF APPOINTMENTS FOR ' + str(var_date), 'L')
@@ -27,18 +32,16 @@ class PDF(FPDF):
         pdf.ln(2)
 
 
+root_dir = base_dir()
+font_dir = root_dir / 'Fonts'
+
 pdf = PDF(orientation='P', unit='mm', format='A4')
 
-'''
-    Change the file path of Novecento and Armata. :)    
-'''
-
-pdf.add_font('Novecento Wide Demi Bold', 'B',
-             r"C:\Users\Asian Land\AppData\Local\Microsoft\Windows\Fonts\Novecentowide-Bold.ttf", uni=True)
-pdf.add_font('Armata Regular', '', r"C:\Users\Asian Land\AppData\Local\Microsoft\Windows\Fonts\Armata-Regular.ttf", uni=True)
-pdf.add_font('Trebuchet MS Bold', 'B', r"C:\Windows\Fonts\trebucbd.ttf", uni=True)
-pdf.add_font('Trebuchet MS Bold Italic', 'BI', r"C:\Windows\Fonts\trebucbi.ttf", uni=True)
-pdf.add_font('Trebuchet MS Regular', '', r"C:\Windows\Fonts\trebuc.ttf", uni=True)
+pdf.add_font('Novecento Wide Demi Bold', 'B', str(font_dir / 'Novecentowide-Bold.ttf'), uni=True)
+pdf.add_font('Armata Regular', '', str(font_dir / 'Armata-Regular.ttf'), uni=True)
+pdf.add_font('Trebuchet MS Bold', 'B', r"C:\\Windows\\Fonts\\trebucbd.ttf", uni=True)
+pdf.add_font('Trebuchet MS Bold Italic', 'BI', r"C:\\Windows\\Fonts\\trebucbi.ttf", uni=True)
+pdf.add_font('Trebuchet MS Regular', '', r"C:\\Windows\\Fonts\\trebuc.ttf", uni=True)
 pdf.add_page()
 pdf.alias_nb_pages()
 pdf.set_margins(10, 12, 12)
